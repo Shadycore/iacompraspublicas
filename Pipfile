@@ -1,0 +1,27 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "==3.2"
+django-ckeditor = "*"
+pillow = "*"
+pylint = "*"
+pylint-django = "*"
+pylint-celery = "*"
+djangorestframework = "*"
+whitenoise = "*"
+configparser = "*"
+python-dateutil = "*"
+psycopg2 = "*"
+
+[dev-packages]
+pylint = "*"
+pylint-django = "*"
+autopep8 = "*"
+pycodestyle = "*"
+
+[requires]
+python_version = "3.10"
+python_full_version = "3.10.6"

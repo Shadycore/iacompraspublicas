@@ -1,0 +1,6 @@
+.vscode
+/static/admin/*
+db.sqlite3
+baseapp/migrations/*
+analizaproveedor/migrations/*
+buscapatrones/migrations/*
