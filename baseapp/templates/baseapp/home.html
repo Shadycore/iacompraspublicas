@@ -5,7 +5,8 @@
 {% endblock title %}
 {% block descripcion_autor %}
 <meta name="description" content="Aplicación para ayudar en compras públicas">
-<meta name="author" content="">
+<meta name="author" content="wlopezc-mgomez">
+<link rel="icon" type="image/png" size="32x32" href="{% static 'assets/images/favicon-32x32.png' %}"></link>
 {% endblock descripcion_autor %}
 
 
@@ -20,14 +21,21 @@
 <ul class="app-menu list-unstyled accordion" id="menu-accordion">
     <li class="nav-item">
         <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{% url 'analizaproveedor:analizaproveedor' %}">
                 <span class="nav-link-text">Compra - Analiza Proveedor</span>
         </a><!--//nav-link-->
     </li><!--//nav-item-->
     <li class="nav-item">
         <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-        <a class="nav-link" href="#">
+        <a class="nav-link" href="{% url 'buscapatrones:buscapatrones' %}">
                 <span class="nav-link-text">Compra - Identifica Patrones</span>
+        </a><!--//nav-link-->
+    </li><!--//nav-item-->
+
+    <li class="nav-item">
+        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
+        <a class="nav-link" href= {% url 'cargainfo:cargainfo' %}>
+                <span class="nav-link-text">Carga información (SRI - OCDS)</span>
         </a><!--//nav-link-->
     </li><!--//nav-item-->
 

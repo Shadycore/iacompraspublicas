@@ -2,15 +2,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	{% block title %}
-	
-	{% endblock title %}
+
+{% block title %}
+{% endblock title %}
     <!-- Meta -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 	{% block descripcion_autor %}
+	<meta name="description" content="">
+    <meta name="author" content="">
+	<link rel="" type="" size="32x32" href="#"></link>
 	{% endblock descripcion_autor %}
 
 	<!-- FontAwesome JS-->
@@ -19,7 +21,7 @@
 	<link id="theme-style" rel="stylesheet" href="{% static 'assets/css/portal.css' %}">
 
 	{% block csstables %}
-    {% endblock csstables %}
+    {% endblock  %}
    <!-- Custom styles for this page
    <link href="{% static 'assets/vendor/datatables/dataTables.bootstrap4.min.css'%}" rel="stylesheet">-->
      <!-- jQuery Confirm -->
@@ -74,16 +76,17 @@
 	        <div class="sidepanel-inner d-flex flex-column">
 		        <a href=" {% url 'baseapp:home' %} " id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
 		        <div class="app-branding">
-		            <a class="app-logo" href=" {% url 'baseapp:home' %} ">						
+		            <a class="app-logo" href=" {% url 'baseapp:home' %} ">
 						<img class="logo-icon me-2" src="{% static 'assets/images/logo.png' %}" alt="logo">
 						{% block logo_text %}
-						<span class="logo-text">Nombre APP</span></a>
+						<span class="logo-text"></span></a>
 						{% endblock logo_text %}
 		        </div><!--//app-branding-->
 		        <hr class="dropdown-divider">
 			    <nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
 					{% block app_menu %}
-
+					<ul class="app-menu list-unstyled accordion" id="menu-accordion">
+					</ul><!--//app-menu-->
 					{% endblock app_menu %}
 			    </nav><!--//app-nav-->
 	        </div><!--//sidepanel-inner-->
@@ -95,7 +98,7 @@
 		{% endblock dashboard %}
 
 	    {% block page_content %}
-		{% endblock page_content %}
+		{% endblock %}
 		<!--//app-header
 
 	    -->
@@ -249,10 +252,12 @@
 	{% endblock control_modal %}
 
 	{% block js_tablas %}
-	{% endblock js_tablas  %}
+
+	{% endblock %}
 
 	{% block js_page %}
-	{% endblock js_page %}
+
+	{% endblock %}
 
 	{% block js_graficos %}
 	{% endblock js_graficos%}

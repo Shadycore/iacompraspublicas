@@ -18,10 +18,16 @@ from django.urls import path, include
 from baseapp import urls
 from analizaproveedor import urls
 from buscapatrones import urls
+from cargainfo import urls
+from analizaproveedor import urls
+from buscapatrones import urls
 
 urlpatterns = [
     path('', include(('baseapp.urls', 'baseapp'), namespace="baseapp")),
-
+    path('ia/', include(('analizaproveedor.urls', 'analizaproveedor'), namespace="analizaproveedor")),
+    path('ia/', include(('buscapatrones.urls', 'buscapatrones'), namespace="buscapatrones")),
+    path('ci/', include(('cargainfo.urls', 'cargainfo'), namespace="cargainfo")),
+    
     # path('admin/', admin.site.urls),
     # path('admin/', admin.site.urls),
 ]

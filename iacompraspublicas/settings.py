@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'baseapp',
     'analizaproveedor',
-    'buscapatrones'
+    'buscapatrones',
+    'cargainfo'
 ]
 
 MIDDLEWARE = [

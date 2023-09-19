@@ -1,0 +1,174 @@
+{% extends 'baseapp/home.html' %}
+{% load static %}
+
+{% block csstables %}
+
+  <!-- Custom fonts for this template -->
+  <link href="{% static 'assets/vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+
+  <link href="{% static 'assets/vendor/css/bootstrap-datetimepicker.min.css'%}" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="{% static 'assets/vendor/css/sb-admin-2.min.css'%}" rel="stylesheet">
+
+  
+   <!-- Custom styles for this page -->
+   <link href="{% static 'assets/vendor/datatables/dataTables.bootstrap4.min.css'%}" rel="stylesheet">
+     <!-- jQuery Confirm -->
+  <link rel="stylesheet" href="{% static 'assets/vendor/jquery_confirm/jquery-confirm.min.css' %}">
+
+  <!-- XDSoft DateTimePicker
+  <link rel="stylesheet" 
+        href="https://cdnjs.cloudflare.com/ajax/libs/jquery-datetimepicker/4.17.47/jquery.datetimepicker.min.css" 
+            integrity="sha256-DOS9W6NR+NFe1fUhEE0PGKY/fubbUCnOfTje2JMDw3Y=" crossorigin="anonymous" />-->  
+
+  <link rel="stylesheet" href="https://unpkg.com/bootstrap-table@1.15.3/dist/bootstrap-table.min.css">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.8/css/select2.min.css" rel="stylesheet" />
+    <style type ="text/css" media="screen">
+        {input:valid,
+        textarea:valid {
+            background: green;
+        }
+        input:invalid,
+        textarea:invalid {
+            background: red;
+        }}
+    </style>
+    <script type="text/javascript">
+        function validarArchivo(){
+          var archivo = document.getElementById("archivo_csv").value;
+          if(archivo.substring(archivo.length-3, archivo.length) != "csv"){
+            alert("El archivo debe tener la extensión .csv");
+            return false;
+          } else {
+            return true;
+          } 
+        }
+  
+        function validarEstructura() {
+            let estructuraCorrecta = true;
+            var archivo = document.getElementById("archivo_csv").value;
+            
+            // Verificar que el archivo tenga 10 columnas
+            rows = archivo.split('\n');
+            header = rows[0];
+            columns = archivo[0].split(',');
+            if (columns.length !== 11) {
+                alert("El archivo no tiene el formato requerido: Columnas " + columns.length  +" de 11 \n Líneas: " + rows.length);
+                estructuraCorrecta = false;
+            }
+            if (estructuraCorrecta == true){ 
+                if (estructuraCorrecta){
+                    // Verificar que la última columna sea una fecha válida en formato YYYY-MM-DD
+                    columns = archivo[1].split(',');
+                    const ultimaColumna = columns[9];          
+                    const fechaValidaRegex = /^\d{4}-\d{2}-\d{2}$/;
+                
+                    if (!fechaValidaRegex.test(ultimaColumna)) {
+                        alert('El formato del campo fecha de venta no es el correcto')
+                        estructuraCorrecta = false;
+                    }
+                }
+            }
+            return estructuraCorrecta;  
+          }
+  
+      </script> 
+{% endblock csstables %}
+
+{% block page_content %}
+<form action="{% url 'cargainfo:cargainfo' %}" method="post" enctype="multipart/form-data" onsubmit="return validarArchivo()" >
+    {% csrf_token %}
+    <div class="col-xl-6 col-md-6 mb-6">
+        <div class="card border-left-danger shadow h-100 py-2">
+            <div class="col-12 col-lg-12">
+                <h2 class="m-0 font-weight-bold text-danger text-center">Carga masiva de datos</h2>
+            </div>
+            <div class="card-body">
+            <div class="row no-gutters align-items-center">
+                <div class="dropdown-divider"></div>
+                <div class="col mr-2">
+                    <input type="file" name="archivo_csv" id="archivo_csv" />
+                      <br/>
+                    <!-- {{ form.as_p }} -->
+                    <div class="dropdown-divider"></div>
+                    <br/>
+                    <div class="row"><div class="col"></div></div>
+
+                    <div class="row">
+                        <div class="col">
+                         </div>
+                         <div class="col"> 
+                            <button type="submit" class="btn btn-danger" name="btn_procesar">
+                                    <span class="fa fa-save"></span> Procesar archivo
+                            </button>
+                        </div>
+  
+                    </div>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}
+
+{% block js_page %}
+	<script>
+    $(document).ready(function(){ 
+        function validarEstructura() {
+            let estructuraCorrecta = true;
+            var archivo = document.getElementById("archivo_csv").value;
+            alert(archivo[0].length);
+            // Verificar que el archivo tenga 10 columnas
+            if (archivo[0].length !== 11) {
+                alert("El archivo no tiene el número de columnas requeridas");
+                estructuraCorrecta = false;
+            }
+            if (estructuraCorrecta == true){ 
+                // Verificar que las columnas sean las esperadas
+                const columnasEsperadas = ["cliente", "subtotal", "totalventa", "porcIva", "totaliva", "cultivo", "produccion", "cantidad", "precio", "total","fechaVenta"];
+            
+                for (let i = 0; i < columnasEsperadas.length; i++) {
+                    if (archivo[0][i] !== columnasEsperadas[i]) {
+                        alert("Las columnas del archivo no son las que se espera");
+                        estructuraCorrecta = false;
+                    }
+                }
+
+                if (estructuraCorrecta){
+                    // Verificar que la última columna sea una fecha válida en formato YYYY-MM-DD
+                    const ultimaColumna = archivo[1][9];          
+                    const fechaValidaRegex = /^\d{4}-\d{2}-\d{2}$/;
+                
+                    if (!fechaValidaRegex.test(ultimaColumna)) {
+                        alert('El formato del campo fecha de venta no es el correcto')
+                        estructuraCorrecta = false;
+                    }
+                }
+            }
+            return estructuraCorrecta;  
+          }
+        $('#archivo_csv').change(function(){ 
+            var fileName = $(this).val();  
+                var extension = fileName.substring(fileName.lastIndexOf('.')+1); 
+                if (extension == "csv") { 
+                    if validarEstructura(archivo){
+                        alert("archivo sin formato válido");
+                    }
+                } else { 
+                    alert("Por favor seleccione un archivo CSV válido");
+                    $('#archivo_csv').val("");
+                }  
+        });  
+
+        
+    });
+	</script>
+    <script>
+        $('#btn_procesar').click(function(){ 
+            alert("Archivo procesado"); 
+        });
+    </script>
+{% endblock %}

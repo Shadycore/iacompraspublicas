@@ -3,6 +3,6 @@ from django.contrib.auth import views as auth_views
 from buscapatrones.views import BuscaPatrones
 
 urlpatterns = [
-    path('/buscapatrones', BuscaPatrones, name='buscapatrones'),
+    path('buscapatrones', BuscaPatrones, name='buscapatrones'),
     
 ]

@@ -4,5 +4,5 @@ from django.shortcuts import render
 
 
 def BuscaPatrones(request):
-    template_name = "buscapatrones.html"
+    template_name = "buscapatrones/buscapatrones.html"
     return render(request, template_name)

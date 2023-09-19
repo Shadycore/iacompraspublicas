@@ -2,5 +2,12 @@
 /static/admin/*
 db.sqlite3
 baseapp/migrations/*
+baseapp/__pycache__/*
 analizaproveedor/migrations/*
+analizaproveedor/__pycache__/*
 buscapatrones/migrations/*
+buscapatrones/__pycache__/*
+cargainfo/migrations/*
+cargainfo/__pycache__/*
+iacompraspublicas/__pycache__/*
+
