@@ -35,50 +35,10 @@
             background: red;
         }}
     </style>
-    <script type="text/javascript">
-        function validarArchivo(){
-          var archivo = document.getElementById("archivo_csv").value;
-          if(archivo.substring(archivo.length-3, archivo.length) != "csv"){
-            alert("El archivo debe tener la extensión .csv");
-            return false;
-          } else {
-            return true;
-          } 
-        }
-  
-        function validarEstructura() {
-            let estructuraCorrecta = true;
-            var archivo = document.getElementById("archivo_csv").value;
-            
-            // Verificar que el archivo tenga 10 columnas
-            rows = archivo.split('\n');
-            header = rows[0];
-            columns = archivo[0].split(',');
-            if (columns.length !== 11) {
-                alert("El archivo no tiene el formato requerido: Columnas " + columns.length  +" de 11 \n Líneas: " + rows.length);
-                estructuraCorrecta = false;
-            }
-            if (estructuraCorrecta == true){ 
-                if (estructuraCorrecta){
-                    // Verificar que la última columna sea una fecha válida en formato YYYY-MM-DD
-                    columns = archivo[1].split(',');
-                    const ultimaColumna = columns[9];          
-                    const fechaValidaRegex = /^\d{4}-\d{2}-\d{2}$/;
-                
-                    if (!fechaValidaRegex.test(ultimaColumna)) {
-                        alert('El formato del campo fecha de venta no es el correcto')
-                        estructuraCorrecta = false;
-                    }
-                }
-            }
-            return estructuraCorrecta;  
-          }
-  
-      </script> 
 {% endblock csstables %}
 
 {% block page_content %}
-<form action="{% url 'cargainfo:cargainfo' %}" method="post" enctype="multipart/form-data" onsubmit="return validarArchivo()" >
+<form action="{% url 'cargainfo:cargainfo' %}" method="post" enctype="multipart/form-data" >
     {% csrf_token %}
     <div class="col-xl-6 col-md-6 mb-6">
         <div class="card border-left-danger shadow h-100 py-2">
@@ -116,59 +76,30 @@
 
 {% block js_page %}
 	<script>
-    $(document).ready(function(){ 
-        function validarEstructura() {
-            let estructuraCorrecta = true;
-            var archivo = document.getElementById("archivo_csv").value;
-            alert(archivo[0].length);
-            // Verificar que el archivo tenga 10 columnas
-            if (archivo[0].length !== 11) {
-                alert("El archivo no tiene el número de columnas requeridas");
-                estructuraCorrecta = false;
-            }
-            if (estructuraCorrecta == true){ 
-                // Verificar que las columnas sean las esperadas
-                const columnasEsperadas = ["cliente", "subtotal", "totalventa", "porcIva", "totaliva", "cultivo", "produccion", "cantidad", "precio", "total","fechaVenta"];
-            
-                for (let i = 0; i < columnasEsperadas.length; i++) {
-                    if (archivo[0][i] !== columnasEsperadas[i]) {
-                        alert("Las columnas del archivo no son las que se espera");
-                        estructuraCorrecta = false;
-                    }
-                }
 
-                if (estructuraCorrecta){
-                    // Verificar que la última columna sea una fecha válida en formato YYYY-MM-DD
-                    const ultimaColumna = archivo[1][9];          
-                    const fechaValidaRegex = /^\d{4}-\d{2}-\d{2}$/;
-                
-                    if (!fechaValidaRegex.test(ultimaColumna)) {
-                        alert('El formato del campo fecha de venta no es el correcto')
-                        estructuraCorrecta = false;
-                    }
-                }
-            }
-            return estructuraCorrecta;  
-          }
-        $('#archivo_csv').change(function(){ 
-            var fileName = $(this).val();  
-                var extension = fileName.substring(fileName.lastIndexOf('.')+1); 
-                if (extension == "csv") { 
-                    if validarEstructura(archivo){
-                        alert("archivo sin formato válido");
-                    }
-                } else { 
-                    alert("Por favor seleccione un archivo CSV válido");
-                    $('#archivo_csv').val("");
-                }  
-        });  
+    document.getElementById("archivo_csv").onchange = function() {
+        var archivo = document.getElementById("archivo_csv").value;
+        var msg = "";
+        var val = true;
+        if (archivo.substring(archivo.length-3, archivo.length) != "csv"){
+            msg = msg + " El archivo debe tener la extensión .csv" + "\n";
+            val = false;
+        } 
+        //validar si el string contiene el texto awatds_ o SRI_RUC_
+        if(!archivo.includes("awards_") && !archivo.includes("SRI_RUC_")){
+            msg = msg + " No modificar los nombres de archivos que se descargan (awards_, SRI_RUC): " + archivo.substring(archivo.length-30, archivo.length) + " \n";
+            val = false;
+        } 
 
-        
-    });
+        if (!val){
+            mensaje(msg,'red');
+            document.getElementById("archivo_csv").value = "";
+        }
+    };
 	</script>
     <script>
         $('#btn_procesar').click(function(){ 
-            alert("Archivo procesado"); 
+            mensaje("Archivo procesado","green"); 
         });
     </script>
 {% endblock %}

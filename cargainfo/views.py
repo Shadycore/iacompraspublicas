@@ -16,82 +16,126 @@ from django.contrib.auth import authenticate
 import shutil
 from django.conf import settings
 from django.db.models import Q
+import tempfile
 
 from analizaproveedor.models import solicitud_compra, sri_ente
 
-# Create your views here.
+
 def CargaInfoView(request):
     template_name = "cargainfo/cargainfo.html"
     context = {}    
 
     if request.method == 'POST':
-        #file_path = settings.MEDIA_URL  + request.FILES['archivo_csv'].name
-        #file = request.FILES['archivo_csv']
-        #shutil.copyfileobj(file, open(file_path, 'wb+'))
-        csv_file = request.FILES['archivo_csv']#file_path
-        if csv_file[:7] == "SRI_RUC":
-            cargar_info_sri(csv_file,request.user)
+        csv_file = request.FILES['archivo_csv']
+        # validar el nombre del archivo en los primeros 7 caracteres
+        if csv_file.name[:7] == "SRI_RUC":
+            cargar_info_sri(csv_file, request.user, "|")
         
-        if csv_file[:7] == "awards_":
-            cargar_info_csv(csv_file,request.user)   
+        if csv_file.name[:7] == "awards_":
+            cargar_info_csv(csv_file, request.user, ",")
+
+    return render(request, template_name, context)
 
 
-    return render(request,template_name,context)
+def cargar_info_sri (csv_file, user, separador):
 
-def cargar_info_sri (csv_file,user):
-    pass
-
-def cargar_info_csv(csv_file,user):
-    # Abrir el archivo CSV
-    file_name = csv_file.name
-    with open(file_name, 'r') as file_name:
-        reader = csv.reader(file_name)        
-        # Saltar la cabecera
+    with open(file_name.name, 'r',) as file_name:
+        reader = csv.reader(file_name)
         next(reader)
-        # Recorrer cada registro
         for line in reader:
-            # Obtener los datos de la venta
-            a = a + 1
-            #Grabar información
-            """
-            cliente = line[0]
-            subTotal = line[1]
-            totalVenta = line[2]
-            porcIva = line[3]
-            totalIva = line[4]
-            id = None
-            # Crear una nueva venta
-            venta = Venta(
-                cliente_id=cliente,
-                subTotal=subTotal,
-                totalVenta=totalVenta,
-                porcIva=porcIva,
-                totalIva=totalIva,
-                usuarioCreacion= user
-            )
-            venta.save()
-            id = venta.id
-            # Obtener los datos del detalle de venta
-            cultivo = line[5]
-            produccion = line[6]
-            cantidad = line[7]
-            precio = line[8]
-            total = line[9]
+            #Lee información
+            columns = line.split(separador)
+            numero_ruc = columns[0]
+            razon_social = columns[1]
+            provincia_jurisdiccion = columns[2]
+            nombre_comercial = columns[3]
+            estado_contribuyente = columns[4]
+            clase_contribuyente = columns[5]
+            fecha_inicio_actividades = columns[6]
+            fecha_actualizacion = columns[7]
+            fecha_suspension_definitiva = columns[8]
+            fecha_reinicio_actividades = columns[9]
+            obligado = columns[10]
+            tipo_contribuyente = columns[11]
+            numero_establecimiento = columns[12]
+            nombre_fantasia_comercial = columns[13]
+            estado_establecimiento = columns[14]
+            descripcion_provincia_est = columns[15]
+            descripcion_canton_est = columns[16]
+            descripcion_parroquia_est = columns[17]
+            codigo_ciiu = columns[18]
+            actividad_economica = columns[19]
 
-            # Crear un nuevo detalle de venta
-            detalle_venta = DetalleVenta(
-                venta=venta,
-                cultivo_id=cultivo,
-                produccion_id=produccion,
-                cantidad=cantidad,
-                precio=precio,
-                total=total,
-                usuarioCreacion= user
+            # Guarda solicitud de compra
+            _sri_ente = sri_ente(
+                numero_ruc = numero_ruc,
+                razon_social = razon_social,
+                provincia_jurisdiccion = provincia_jurisdiccion,
+                nombre_comercial = nombre_comercial,
+                estado_contribuyente = estado_contribuyente,
+                clase_contribuyente = clase_contribuyente,
+                fecha_inicio_actividades = fecha_inicio_actividades,
+                fecha_actualizacion = fecha_actualizacion,
+                fecha_suspension_definitiva = fecha_suspension_definitiva,
+                fecha_reinicio_actividades = fecha_reinicio_actividades,
+                obligado = obligado,
+                tipo_contribuyente = tipo_contribuyente,
+                numero_establecimiento = numero_establecimiento,
+                nombre_fantasia_comercial = nombre_fantasia_comercial,
+                estado_establecimiento = estado_establecimiento,
+                descripcion_provincia_est = descripcion_provincia_est,
+                descripcion_canton_est = descripcion_canton_est,
+                descripcion_parroquia_est = descripcion_parroquia_est,
+                codigo_ciiu = codigo_ciiu,
+                actividad_economica = actividad_economica
             )
-            detalle_venta.save()
-            #detalle_venta.save(commit=True)
-            # Actualizar el campo fechaVenta
-            venta.fechaVenta = line[10]
-            venta.save()"""
+            _sri_ente.save()
+            columns = None
 
-        
+
+def cargar_info_csv(csv_file, user, separador):
+    if csv_file:
+        with tempfile.NamedTemporaryFile(delete=False) as file:
+            file.write(csv_file.read())
+            file.close()
+
+    with open(file=file.name, mode='r', encoding="utf-8") as f:
+        reader = csv.reader(f)
+        next(reader)
+        for line in reader:
+            #Lee información
+            columns = ','.join(line).split(separador)
+            ocid = columns[0]
+            release_id = columns[1]
+            sc_id = columns[2]
+            awardID = columns[3]
+            title = columns[4]
+            description = columns[5]
+            status = columns[6]
+            contractPeriod_startDate = columns[7]
+            contractPeriod_endDate = columns[8]
+            contractPeriod_maxExtentDate = columns[9]
+            contractPeriod_durationInDays = columns[10]
+            amount = columns[11]
+            currency = columns[12]
+            dateSigned = columns[13]
+
+            # Guarda solicitud de compra
+            _solicitud_compra = solicitud_compra(
+                ocid = ocid,
+                release_id = release_id,
+                sc_id = sc_id,
+                awardID = awardID,
+                title = title,
+                description = description,
+                status = status,
+                contractPeriod_startDate = contractPeriod_startDate,
+                contractPeriod_endDate = contractPeriod_endDate,
+                contractPeriod_maxExtentDate = contractPeriod_maxExtentDate,
+                contractPeriod_durationInDays = contractPeriod_durationInDays,
+                amount = amount,
+                currency = currency,
+                dateSigned = dateSigned
+            )
+            _solicitud_compra.save()
+            columns = None
