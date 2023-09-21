@@ -3,21 +3,21 @@ from unicodedata import name
 from django.db import models
 
 
-class solicitud_compra(models.Model):
-    ocid = models.CharField(max_length=250)
-    release_id = models.CharField(max_length=250)
-    sc_id = models.CharField(max_length=250)
-    awardID = models.CharField(max_length=250)
-    title = models.CharField(max_length=250)
-    description = models.CharField(max_length=250)
-    status = models.CharField(max_length=250)
-    contractPeriod_startDate = models.DateField(blank=True, null=True)
-    contractPeriod_endDate = models.DateField(blank=True, null=True)
-    contractPeriod_maxExtentDate = models.CharField(max_length=250)
-    contractPeriod_durationInDays = models.CharField(max_length=250)
-    amount = models.CharField(max_length=250)
-    currency = models.CharField(max_length=250)
-    dateSigned = models.DateField(blank=True, null=True)
+class contract(models.Model):
+    ocid = models.CharField(max_length=250, null=True)
+    release_id = models.CharField(max_length=250, null=True)
+    co_id = models.CharField(max_length=250, null=True)
+    awardID = models.CharField(max_length=250, null=True)
+    title = models.CharField(max_length=250, null=True)
+    description = models.CharField(max_length=250, null=True)
+    status = models.CharField(max_length=250, null=True)
+    contractPeriod_startDate = models.CharField(max_length=250, null=True)
+    contractPeriod_endDate = models.CharField(max_length=250, null=True)
+    contractPeriod_maxExtentDate = models.CharField(max_length=250, null=True)
+    contractPeriod_durationInDays = models.CharField(max_length=250, null=True)
+    amount = models.CharField(max_length=250, null=True)
+    currency = models.CharField(max_length=250, null=True)
+    dateSigned = models.CharField(max_length=250, null=True)
 
     def __str__(self):
         return '{}:{}'.format(self.ocid, self.title)
@@ -25,7 +25,7 @@ class solicitud_compra(models.Model):
     def save(self):
         self.ocid = self.ocid
         self.release_id = self.release_id
-        self.sc_id = self.sc_id
+        self.co_id = self.co_id
         self.awardID = self.awardID
         self.title = self.title
         self.description = self.description
@@ -37,12 +37,208 @@ class solicitud_compra(models.Model):
         self.amount = self.amount
         self.currency = self.currency
         self.dateSigned = self.dateSigned
-        super(solicitud_compra, self).save() 
+        super(contract, self).save() 
 
     class Meta:
-        verbose_name_plural = "solicitud_compras"
-        db_table = 'solicitud_compra'
+        verbose_name_plural = "contracts"
+        db_table = 'contract'
 
+
+class tender(models.Model): 
+    ocid = models.CharField(max_length=250, null=True)
+    release_id = models.CharField(max_length=250, null=True)
+    te_id = models.CharField(max_length=250, null=True)
+    title = models.CharField(max_length=250, null=True)
+    description = models.CharField(max_length=250, null=True)
+    status = models.CharField(max_length=250, null=True)
+    procuringEntity_id = models.CharField(max_length=250, null=True)
+    procuringEntity_name = models.CharField(max_length=250, null=True)
+    value_amount = models.CharField(max_length=250, null=True)
+    value_currency = models.CharField(max_length=250, null=True)
+    procurementMethod = models.CharField(max_length=250, null=True)
+    procurementMethodDetails = models.CharField(max_length=250, null=True)
+    mainProcurementCategory = models.CharField(max_length=250, null=True)
+    awardCriteria = models.CharField(max_length=250, null=True)
+    tenderPeriod_startDate = models.CharField(max_length=250, null=True)
+    tenderPeriod_endDate = models.CharField(max_length=250, null=True)
+    tenderPeriod_maxExtentDate = models.CharField(max_length=250, null=True)
+    tenderPeriod_durationInDays = models.CharField(max_length=250, null=True)
+    enquiryPeriod_startDate = models.CharField(max_length=250, null=True)
+    enquiryPeriod_endDate = models.CharField(max_length=250, null=True)
+    enquiryPeriod_maxExtentDate = models.CharField(max_length=250, null=True)
+    enquiryPeriod_durationInDays = models.CharField(max_length=250, null=True)
+    hasEnquiries = models.CharField(max_length=250, null=True)
+    eligibilityCriteria = models.CharField(max_length=250, null=True)
+    awardPeriod_startDate = models.CharField(max_length=250, null=True)
+    awardPeriod_endDate = models.CharField(max_length=250, null=True)
+    awardPeriod_maxExtentDate = models.CharField(max_length=250, null=True)
+    awardPeriod_durationInDays = models.CharField(max_length=250, null=True)
+    numberOfTenderers = models.CharField(max_length=250, null=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.ocid, self.title)
+
+    def save(self):
+        self.ocid = self.ocid
+        self.release_id = self.release_id
+        self.id = self.id
+        self.title = self.title
+        self.description = self.description
+        self.status = self.status
+        self.procuringEntity_id = self.procuringEntity_id
+        self.procuringEntity_name = self.procuringEntity_name
+        self.value_amount = self.value_amount
+        self.value_currency = self.value_currency
+        self.procurementMethod = self.procurementMethod
+        self.procurementMethodDetails = self.procurementMethodDetails
+        self.mainProcurementCategory = self.mainProcurementCategory
+        self.awardCriteria = self.awardCriteria
+        self.tenderPeriod_startDate = self.tenderPeriod_startDate
+        self.tenderPeriod_endDate = self.tenderPeriod_endDate
+        self.tenderPeriod_maxExtentDate = self.tenderPeriod_maxExtentDate
+        self.tenderPeriod_durationInDays = self.tenderPeriod_durationInDays
+        self.enquiryPeriod_startDate = self.enquiryPeriod_startDate
+        self.enquiryPeriod_endDate = self.enquiryPeriod_endDate
+        self.enquiryPeriod_maxExtentDate = self.enquiryPeriod_maxExtentDate
+        self.enquiryPeriod_durationInDays = self.enquiryPeriod_durationInDays
+        self.hasEnquiries = self.hasEnquiries
+        self.eligibilityCriteria = self.eligibilityCriteria
+        self.awardPeriod_startDate = self.awardPeriod_startDate
+        self.awardPeriod_endDate = self.awardPeriod_endDate
+        self.awardPeriod_maxExtentDate = self.awardPeriod_maxExtentDate
+        self.awardPeriod_durationInDays = self.awardPeriod_durationInDays
+        self.numberOfTenderers = self.numberOfTenderers
+        super(tender, self).save()
+
+    class Meta:
+        verbose_name_plural = "tenders"
+        db_table = 'tender'
+
+
+class supplier(models.Model):
+    ocid = models.CharField(max_length=250, null=True)
+    release_id = models.CharField(max_length=250, null=True)
+    award_id = models.CharField(max_length=250, null=True)
+    su_id = models.CharField(max_length=250, null=True)
+    name = models.CharField(max_length=250, null=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.ocid, self.name)
+
+    def save(self):
+        self.ocid = self.ocid
+        self.release_id = self.release_id
+        self.award_id = self.award_id
+        self.su_id = self.su_id
+        self.name = self.name
+        super(supplier, self).save()
+
+    class Meta:
+        verbose_name_plural = "suppliers"
+        db_table = "supplier"
+
+
+class planning(models.Model):
+    ocid = models.CharField(max_length=250, null=True)
+    pa_id = models.CharField(max_length=250, null=True)
+    rationale = models.CharField(max_length=250, null=True)
+    budget_id = models.CharField(max_length=250, null=True)
+    budget_description = models.CharField(max_length=250, null=True)
+    budget_amount = models.CharField(max_length=250, null=True)
+    budget_currency = models.CharField(max_length=250, null=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.ocid, self.budget_description)
+
+    def save(self):
+        self.ocid = self.ocid
+        self.pa_id = self.pa_id
+        self.rationale = self.rationale
+        self.budget_id = self.budget_id
+        self.budget_description = self.budget_description
+        self.budget_amount = self.budget_amount
+        self.budget_currency = self.budget_currency
+        super(planning, self).save()
+    
+    class Meta:
+        verbose_name_plural = "plannings"
+        db_table = 'planning'
+
+
+class release(models.Model):
+    ocid = models.CharField(max_length=250, null=True)
+    re_id = models.CharField(max_length=250, null=True)
+    initiationType = models.CharField(max_length=250, null=True)
+    buyer_id = models.CharField(max_length=250, null=True)
+    buyer_name = models.CharField(max_length=250, null=True)
+    language = models.CharField(max_length=250, null=True)
+    date = models.CharField(max_length=250, null=True)
+    tag = models.CharField(max_length=250, null=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.ocid, self.buyer_name)
+    
+    def save(self):
+        self.ocid = self.ocid
+        self.re_id = self.re_id
+        self.initiationType = self.initiationType
+        self.buyer_id = self.buyer_id
+        self.buyer_name = self.buyer_name
+        self.language = self.language
+        self.date = self.date
+        self.tag = self.tag
+        super(release, self).save()
+
+    class Meta:
+        verbose_name_plural = "releases"
+        db_table = 'release'
+
+
+class award(models.Model):
+    ocid = models.CharField(max_length=250, null=True)
+    release_id = models.CharField(max_length=250, null=True)
+    aw_id = models.CharField(max_length=250, null=True)
+    title = models.CharField(max_length=250, null=True)
+    description = models.CharField(max_length=250, null=True)
+    status = models.CharField(max_length=250, null=True)
+    date = models.CharField(max_length=250, null=True)
+    amount = models.CharField(max_length=250, null=True)
+    currency = models.CharField(max_length=250, null=True)
+    correctedValue_amount = models.CharField(max_length=250, null=True)
+    correctedValue_currency = models.CharField(max_length=250, null=True)
+    enteredValue_amount = models.CharField(max_length=250, null=True)
+    enteredValue_currency = models.CharField(max_length=250, null=True)
+    contractPeriod_startDate = models.CharField(max_length=250, null=True)
+    contractPeriod_endDate = models.CharField(max_length=250, null=True)
+    contractPeriod_maxExtentDate = models.CharField(max_length=250, null=True)
+    contractPeriod_durationInDays = models.CharField(max_length=250, null=True)
+
+    def __str__(self):
+        return '{}:{}'.format(self.ocid, self.description)
+
+    def save(self):
+        self.ocid = self.ocid
+        self.release_id = self.release_id
+        self.aw_id = self.aw_id
+        self.title = self.title
+        self.description = self.description
+        self.status = self.status
+        self.date = self.date
+        self.amount = self.amount
+        self.currency = self.currency
+        self.correctedValue_amount = self.correctedValue_amount
+        self.correctedValue_currency = self.correctedValue_currency
+        self.enteredValue_amount = self.enteredValue_amount
+        self.enteredValue_currency = self.enteredValue_currency
+        self.contractPeriod_startDate = self.contractPeriod_startDate
+        self.contractPeriod_endDate = self.contractPeriod_endDate
+        self.contractPeriod_maxExtentDate = self.contractPeriod_maxExtentDate
+        self.contractPeriod_durationInDays = self.contractPeriod_durationInDays
+        super(award, self).save()
+
+    class Meta:
+        verbose_name_plural = "awards"
+        db_table = 'award'
 
 class sri_ente(models.Model):
     numero_ruc = models.CharField(max_length=250)

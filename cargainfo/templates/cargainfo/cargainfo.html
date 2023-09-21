@@ -76,7 +76,6 @@
 
 {% block js_page %}
 	<script>
-
     document.getElementById("archivo_csv").onchange = function() {
         var archivo = document.getElementById("archivo_csv").value;
         var msg = "";
@@ -86,8 +85,8 @@
             val = false;
         } 
         //validar si el string contiene el texto awatds_ o SRI_RUC_
-        if(!archivo.includes("awards_") && !archivo.includes("SRI_RUC_")){
-            msg = msg + " No modificar los nombres de archivos que se descargan (awards_, SRI_RUC): " + archivo.substring(archivo.length-30, archivo.length) + " \n";
+        if(!archivo.includes("awards_") && !archivo.includes("SRI_RUC_")&& !archivo.includes("tender_") && !archivo.includes("suppliers_") && !archivo.includes("releases_")&& !archivo.includes("planning_")&& !archivo.includes("contracts_")){
+            msg = msg + " No modificar los nombres de archivos que se descargan (awards_,tender_, suppliers_, releases_, planning_, contracts_, SRI_RUC): " + archivo.substring(archivo.length-30, archivo.length) + " \n";
             val = false;
         } 
 
@@ -99,7 +98,7 @@
 	</script>
     <script>
         $('#btn_procesar').click(function(){ 
-            mensaje("Archivo procesado","green"); 
+            alert("Archivo procesado"); 
         });
     </script>
 {% endblock %}
