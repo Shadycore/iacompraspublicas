@@ -49,9 +49,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'baseapp',
-    'analizaproveedor',
-    'buscapatrones',
-    'cargainfo'
+    'cargainfo',
+    'analisiscompraspublicas',
 ]
 
 MIDDLEWARE = [

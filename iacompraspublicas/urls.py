@@ -16,16 +16,12 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from baseapp import urls
-from analizaproveedor import urls
-from buscapatrones import urls
 from cargainfo import urls
-from analizaproveedor import urls
-from buscapatrones import urls
+from analisiscompraspublicas import urls
 
 urlpatterns = [
     path('', include(('baseapp.urls', 'baseapp'), namespace="baseapp")),
-    path('ia/', include(('analizaproveedor.urls', 'analizaproveedor'), namespace="analizaproveedor")),
-    path('ia/', include(('buscapatrones.urls', 'buscapatrones'), namespace="buscapatrones")),
+    path('ia/', include(('analisiscompraspublicas.urls', 'analisiscompraspublicas'), namespace="analisiscompraspublicas")),
     path('ci/', include(('cargainfo.urls', 'cargainfo'), namespace="cargainfo")),
     
     # path('admin/', admin.site.urls),

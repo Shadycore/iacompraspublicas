@@ -15,6 +15,11 @@ whitenoise = "*"
 configparser = "*"
 python-dateutil = "*"
 psycopg2 = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+matplotlib = "*"
 
 [dev-packages]
 pylint = "*"
@@ -25,3 +30,6 @@ pycodestyle = "*"
 [requires]
 python_version = "3.10"
 python_full_version = "3.10.6"
+
+[scripts]
+run_analisis = "python manage.py runserver"

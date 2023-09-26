@@ -98,7 +98,8 @@
 	</script>
     <script>
         $('#btn_procesar').click(function(){ 
-            alert("Archivo procesado"); 
+            if {{ mensaje }}
+                mensaje('{{ mensaje }}','red');
         });
     </script>
 {% endblock %}

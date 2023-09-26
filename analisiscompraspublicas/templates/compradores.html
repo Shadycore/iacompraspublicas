@@ -1,0 +1,356 @@
+{% extends 'baseapp/home.html' %}
+{% load static %}
+{% block dashboard %}
+<form method="post" id="frmCompradore">
+    {% csrf_token %}
+	<h1 style="font-color=red" ><center>Análisis Compradores</center></h1>
+	    <div class="app-content pt-3 p-md-3 p-lg-4">
+		    <div class="container-xl">		      
+          <div class="imprimir row">
+            <div class="col-lg-2">Año a consultar</div>
+            <div class="col-md-2">
+                <select name="id_anios" id="id_anios" class="form-control">
+                    {% for i  in anios %} 
+                        <option value="{{i}}">{{i}} </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-info" id="btnConsultar" title="Buscar"> 
+                    <i class="far fa-chart-bar"></i> 
+                </button>
+            </div>
+        </div>
+        <br/><br/>
+          <h2 class="h3 mb-2 text-bg-dark ">Información del : {{ ianio }}</h2>
+          <br />
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-lg-6">
+            <div class="app-card app-card-chart h-100 shadow-sm">
+                <div class="app-card-header p-3 border-0">
+                  <h4 class="app-card-title align-content-center">Entidades con mayor número de licitaciones activas</h4>
+                </div><!--//app-card-header-->
+                    <table class="table-bordered align-content-center">
+                        <thead>
+                          <tr>
+                            <th class="meta"></th>
+                            <th class="meta">Entidad</th>
+                            <th class="meta stat-cell">N. Licitaciones</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for item in entidades_activas %}
+                          <tr>
+                           <td width="50px"></td>
+                            <td width="350px">{{ item.procuringEntity_name }}</td>
+                            <td width="150px" align="right">{{ item.contador  }}</td>
+                          </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+              </div><!--//app-card-->
+            </div><!--//col-->
+              <div class="col-12 col-lg-6">		        
+              <div class="app-card app-card-chart h-100 shadow-sm">
+                <div class="app-card-header p-3 border-0">
+                  <h4 class="app-card-title">Métodos de adquisición</h4>
+                </div><!--//app-card-header-->
+                <div class="app-card-body p-4">					   
+                  <div class="chart-container">
+                          <canvas id="grmetodos" ></canvas>
+                  </div>
+                </div><!--//app-card-body-->
+              </div><!--//app-card-->
+              </div><!--//col-->
+        </div>
+        <div class="row g-4 mb-4">
+            <div class="col-12 col-lg-6">
+            <div class="app-card app-card-chart h-100 shadow-sm">
+                <div class="app-card-header p-3 border-0">
+                  <h4 class="app-card-title">Categorías de Adquición</h4>
+                </div><!--//app-card-header-->
+                <div class="app-card-body p-4">					   
+                  <div class="chart-container">
+                          <canvas id="grcatadquisicion" ></canvas>
+                  </div>
+                </div><!--//app-card-body-->
+              </div><!--//app-card-->
+            </div><!--//col-->
+              <div class="col-12 col-lg-6">		        
+              <div class="app-card app-card-chart h-100 shadow-sm">
+                <div class="app-card-header p-3 border-0">
+                  <h4 class="app-card-title">Días promedio en licitaciones por categorías</h4>
+                </div><!--//app-card-header-->
+                <div class="app-card-body p-4">					   
+                  <div class="chart-container">
+                          <canvas id="grdiasprom" ></canvas>
+                  </div>
+                </div><!--//app-card-body-->
+              </div><!--//app-card-->
+              </div><!--//col-->
+        </div>
+
+		    </div><!--//container-fluid-->
+	    </div><!--//app-content-->
+</form>   
+{% endblock dashboard%}
+
+{% block js_tablas %}
+	<!-- Page level plugins -->
+	<script src="{% static 'assets/vendor/datatables/jquery.dataTables.min.js'%}"></script>
+	<script src="{% static 'assets/vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+	<!-- Bootstrap core JavaScript-->
+	<script src="{% static 'assets/vendor/jquery/jquery.min.js'%}"></script>
+	<script src="{% static 'assets/vendor/bootstrap/js/bootstrap.bundle.min.js'%}"></script>
+
+	<!-- Core plugin JavaScript-->
+	<script src="{% static 'assets/vendor/jquery-easing/jquery.easing.min.js'%}"></script>
+
+	<!-- Page level custom scripts -->
+	<script src="{% static 'assets/vendor/js/demo/datatables-demo.js'%}"></script>
+{% endblock js_tablas %}
+
+{% block js_page %}
+<script>
+  var jq = jQuery.noConflict(true);
+  // Call the dataTables jQuery plugin
+  $(document).ready(function() {
+    $('.table').DataTable();
+  });
+</script>
+
+{% endblock %}
+
+{% block js_graficos %}
+<script src="{% static 'assets/js/chart.js'%}"></script>
+<script src="{% static 'assets/js/chart.min.js'%}"></script>  
+<script src="{% static 'assets/js/index-charts.js'%}"></script>
+
+<script>
+   $(function () {    
+        window.chartColors = {
+          green: '#75c181', // rgba(117,193,129, 1)
+          blue: '#5b99ea', // rgba(91,153,234, 1)
+          gray: '#a9b5c9',
+          text: '#252930',
+          border: '#e7e9ed'
+        };
+    //console.log( {{ entidades_activas }} )
+    //console.log( {{ tendencias }} )
+    //console.log( {{ promedios }} )
+
+        var bkprimario = "rgba(117,193,129,0.8)";
+        var bksecundario = "rgba(91,153,234,0.8)";
+
+        var ctx1 = document.getElementById('grmetodos').getContext('2d');
+        var chart = new Chart(ctx1, {
+          type: 'bar',
+          data: {
+            labels: [{% for data in metodos %} '{{ data.procurementMethod }}',  {% endfor %} ],
+            datasets: [{
+              label: 'Métodos de adquisición',
+              backgroundColor: bkprimario,
+              borderColor: 'gray',
+              data: [{% for data in metodos %} '{{ data.contador }}',  {% endfor %}  ],
+            },
+            ]},
+            options: {
+              responsive: true,
+              legend: {
+                position: 'bottom',
+                align: 'end',
+              },
+
+              tooltips: {
+                mode: 'index',
+                intersect: false,
+                titleMarginBottom: 10,
+                bodySpacing: 10,
+                xPadding: 16,
+                yPadding: 16,
+                borderColor: window.chartColors.border,
+                borderWidth: 1,
+                backgroundColor: '#fff',
+                bodyFontColor: window.chartColors.text,
+                titleFontColor: window.chartColors.text,
+                callbacks: {
+                          label: function(tooltipItem, data) {	                 
+                            return tooltipItem.value + ' Licitaciones';   
+                          }
+                      },
+              },
+              scales: {
+                xAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.border,
+                  },
+                }],
+                yAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.borders,
+                  },
+                  ticks: {
+                          beginAtZero: true,
+                          userCallback: function(value, index, values) {
+                              return value + '';  
+                          }
+                      },
+                }]
+              }
+
+            }
+        });
+
+        var ctx2 = document.getElementById('grcatadquisicion').getContext('2d');
+        var chart = new Chart(ctx2, {
+          type: 'bar',
+          data: {
+            labels: [{% for data in tendencias %} '{{ data.mainProcurementCategory }}',  {% endfor %} ],
+            datasets: [{
+              label: 'Categorías de adquisición',
+              backgroundColor: bksecundario,
+              borderColor: 'gray',
+              data: [{% for data in tendencias %} '{{ data.contador }}',  {% endfor %}  ],
+            },
+            ]},
+            options: {
+              responsive: true,
+              legend: {
+                position: 'bottom',
+                align: 'end',
+              },
+
+              tooltips: {
+                mode: 'index',
+                intersect: false,
+                titleMarginBottom: 10,
+                bodySpacing: 10,
+                xPadding: 16,
+                yPadding: 16,
+                borderColor: window.chartColors.border,
+                borderWidth: 1,
+                backgroundColor: '#fff',
+                bodyFontColor: window.chartColors.text,
+                titleFontColor: window.chartColors.text,
+                callbacks: {
+                          label: function(tooltipItem, data) {	                 
+                            return tooltipItem.value + '';   
+                          }
+                      },
+              },
+              scales: {
+                xAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.border,
+                  },
+                }],
+                yAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.borders,
+                  },
+                  ticks: {
+                          beginAtZero: true,
+                          userCallback: function(value, index, values) {
+                              return value + '';  
+                          }
+                      },
+                }]
+              }
+              
+            }
+        });
+
+
+        var ctx3 = document.getElementById('grdiasprom').getContext('2d');
+        var chart = new Chart(ctx3, {
+          type: 'bar',
+          data: {
+            labels: [{% for data in promedios %} '{{ data.mainProcurementCategory }}',  {% endfor %} ],
+            datasets: [{
+              label: 'Días promedio en licitaciones por categorías',
+              backgroundColor: bkprimario,
+              borderColor: 'gray',
+              data: [{% for data in promedios %} '{{ data.promedio |floatformat:"0" }}',  {% endfor %}  ],
+            },
+            ]},
+            options: {
+              responsive: true,
+              legend: {
+                position: 'bottom',
+                align: 'end',
+              },
+
+              tooltips: {
+                mode: 'index',
+                intersect: false,
+                titleMarginBottom: 10,
+                bodySpacing: 10,
+                xPadding: 16,
+                yPadding: 16,
+                borderColor: window.chartColors.border,
+                borderWidth: 1,
+                backgroundColor: '#fff',
+                bodyFontColor: window.chartColors.text,
+                titleFontColor: window.chartColors.text,
+                callbacks: {
+                          label: function(tooltipItem, data) {	                 
+                            return tooltipItem.value + ' dias';   
+                          }
+                      },
+              },
+              scales: {
+                xAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.border,
+                  },
+                }],
+                yAxes: [{
+                  display: true,
+                  gridLines: {
+                    drawBorder: false,
+                    color: window.chartColors.borders,
+                  },
+                  ticks: {
+                          beginAtZero: true,
+                          userCallback: function(value, index, values) {
+                              return value + '';  
+                          }
+                      },
+                }]
+              }
+
+            }
+        });
+
+     $("#id_anios").val("{{ ianio }}");	
+   });
+</script>
+{% endblock js_graficos%}
+<script>
+      // Generate charts on load
+      window.addEventListener('load', function(){
+          var grmetodos = document.getElementById('grmetodos').getContext('2d');
+          window.myBar = new Chart(grmetodos, barChartConfig);
+
+          var grcatadquisicion = document.getElementById('grcatadquisicion').getContext('2d');
+          window.myBar = new Chart(grcatadquisicion, barChartConfig);
+
+          var grdiasprom = document.getElementById('grdiasprom').getContext('2d');
+          window.myBar = new Chart(grdiasprom, barChartConfig);
+
+
+      });	
+</script>
+
