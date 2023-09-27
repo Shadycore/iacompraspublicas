@@ -264,7 +264,7 @@ def proveedoresView(request):
     results = {}
     try:
         query = f"""
-            SELECT a.name AS nombre_proveedor,
+            SELECT  a.name AS nombre_proveedor,
                 b.status AS estado_contrato,
                 SUBSTRING(b.dateSigned, 1, 4) AS anio_contrato,
                 SUM(CAST(b.amount AS FLOAT)) AS total_contratos,
@@ -273,7 +273,8 @@ def proveedoresView(request):
             INNER JOIN contract b ON a.ocid = b.ocid
             WHERE SUBSTRING(b.dateSigned, 1, 4) = '{dFecha}'
             GROUP BY SUBSTRING(b.dateSigned, 1, 4), a.name, b.status
-            ORDER BY b.status asc;
+            ORDER BY COUNT(b.ocid) asc
+            limit 1000;
         """
 
         with connection.cursor() as cursor:
