@@ -91,19 +91,4 @@
 
 
 {% endblock js_graficos%}
-<script>
-      // Generate charts on load
-      window.addEventListener('load', function(){
-          var grmetodos = document.getElementById('grmetodos').getContext('2d');
-          window.myBar = new Chart(grmetodos, barChartConfig);
-
-          var grcatadquisicion = document.getElementById('grcatadquisicion').getContext('2d');
-          window.myBar = new Chart(grcatadquisicion, barChartConfig);
-
-          var grdiasprom = document.getElementById('grdiasprom').getContext('2d');
-          window.myBar = new Chart(grdiasprom, barChartConfig);
-
-
-      });	
-</script>
 

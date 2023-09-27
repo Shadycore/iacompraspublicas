@@ -201,7 +201,7 @@
           data: {
             labels: [{% for data in amount_categories %} '{{ data.procurementMethod }}',  {% endfor %} ],
             datasets: [{
-              label: 'Montos por categoría,
+              label: 'Montos por categoría',
               backgroundColor: bksecundario,
               borderColor: 'gray',
               data: [{% for data in amount_categories %} '{{ data.valor_contratos | floatformat:"0" }}',  {% endfor %}  ],
