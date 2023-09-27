@@ -27,8 +27,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-import statsmodels.api as sm
-from statsmodels.tsa.arima_model import ARIMA
+#import statsmodels.api as sm
+#from statsmodels.tsa.arima_model import ARIMA
 
 
 from analisiscompraspublicas.models import contract, tender, planning, award, release, supplier
@@ -342,7 +342,7 @@ def grafico_arima(request):
                 cast(value_amount as float) as value_amount
             from tender
         """
-
+    """
     with connection.cursor() as cursor:
         cursor.execute(query)
         tenders = cursor.fetchall()   
@@ -393,6 +393,8 @@ def grafico_arima(request):
     canvas = FigureCanvas(plt.gcf())
     response = HttpResponse(content_type='image/png')
     canvas.print_png(response)
+    """
+    response = HttpResponse(content_type='image/png')
     return response
 
 def tendencia_valor_contrato(request):
