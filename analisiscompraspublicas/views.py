@@ -7,11 +7,11 @@ from django.views import generic
 from django.urls import reverse, reverse_lazy
 from django.db.models import Sum, F, DateTimeField, Count, FloatField, \
                             IntegerField, Prefetch, Case, When, Avg, Min, \
-                            Max, Value, Avg, StdDev
+                            Max, Value, Avg, StdDev, CharField
 from datetime import datetime, timezone, timedelta, date
 from django.db.models.functions import TruncMonth, TruncYear, ExtractMinute, \
                             ExtractMonth, ExtractYear, Cast, Coalesce, Extract, \
-                            Concat, NullIf
+                            Concat, NullIf, Substr
 from django.db.models.query import Q
 import json
 import math
@@ -21,9 +21,9 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
+#from sklearn.preprocessing import LabelEncoder
+#from sklearn.model_selection import train_test_split
+#from sklearn.linear_model import LinearRegression
 
 from analisiscompraspublicas.models import contract, tender, planning, award, release
 
@@ -150,14 +150,111 @@ def compradoresView(request):
     finally:
         anios = 2014 
         oanios = [i for i in range(anioactual, anios, -1)]
-        context = {'entidades_activas': entidades_activas}
+        
 
     context = {'anios': oanios, 'ianio': dFecha, 'anioactual': anioactual, 'anio_anterior': anio_anterior,
                'entidades_activas': entidades_activas, 'years':years, 'num_contratos': num_contratos,
                 'metodos': metodos, 'tendencias': tendencias, 'promedios': promedios, 'mensaje': mensaje}
     return render(request, template_name, context)
 
+def compradores2View (request):
+    template_name = 'compradores2.html'
+    anioactual = datetime.now().year
+    dFecha = datetime.now().year
 
+    if request.method == 'POST':
+        dFecha = int(request.POST.get("id_anios"))
+    
+    mensaje = ""
+    anio_anterior = dFecha - 1
+    context = {}
+    top_categories = {}
+    amount_categories = {}
+    tendencias_categories = {}
+    promedio_dias = {}
+
+    # Consulta para tomar los primeros 4 dígitos del campo y validar que sean numéricos
+    queryset = tender.objects.annotate(
+        start_date_year=Substr('tenderPeriod_startDate', 1, 4, output_field=CharField())
+    ).filter(start_date_year__regex=r'^\d{4}$')  # Esto verifica si son 4 dígitos numéricos
+
+    # Consulta para agrupar por los 4 dígitos del campo start_date_year y procurementMethod
+    # y contar el campo te_id
+    result = queryset.values('start_date_year', 'procurementMethod').annotate(
+        count_te_id=Count('te_id')
+    ).order_by('start_date_year', 'procurementMethod')
+    # Ahora, agrupa los datos por año y método de adquisición
+    aggregated_data = {}
+    for entry in result:
+        year = entry['start_date_year']
+        method = entry['procurementMethod']
+        num_te_id = entry['count_te_id']
+        if year not in aggregated_data:
+            aggregated_data[year] = {}
+        aggregated_data[year][method] = num_te_id
+
+    # Convierte los datos a un formato que se pueda usar en JavaScript
+    js_data = {
+        'labels': list(aggregated_data.keys()),
+        'datasets': []
+    }
+    methods = set()
+    for year_data in aggregated_data.values():
+        methods.update(year_data.keys())
+
+    for method in methods:
+        dataset = {
+            'label': method,
+            'data': [year_data.get(method, 0) for year_data in aggregated_data.values()],
+        }
+        js_data['datasets'].append(dataset)
+
+    # Convierte los datos de Python a JSON
+    js_data_json = json.dumps(js_data)
+    try:
+        
+        top_categories = tender.objects.values('procurementMethod').annotate(
+            num_contratos=Count('te_id')
+        ).exclude(
+            Q(procurementMethod__isnull=True) | Q(procurementMethod='USD')
+        ).order_by('-num_contratos')
+        
+        amount_categories = tender.objects.values('procurementMethod').annotate(
+            valor_contratos=Sum('value_amount')
+        ).exclude(
+            Q(procurementMethod__isnull=True) | Q(procurementMethod='USD')
+        ).order_by('-valor_contratos')
+
+        tendencias_categories = tender.objects.values('procurementMethod').annotate(
+            num_contratos=Count('te_id')
+        ).exclude(
+            Q(procurementMethod__isnull=True) | Q(procurementMethod='USD')
+        ).order_by('-num_contratos')
+
+        promedio_dias = tender.objects.annotate(
+            duration=Cast('tenderPeriod_durationInDays', output_field=FloatField())
+        ).values('procurementMethod').exclude(
+            Q(procurementMethod__isnull=True) | Q(procurementMethod='USD')
+        ).annotate(
+            avg_dias=Avg('duration')
+        )
+    except Exception as e:
+        mensaje = e.__str__()
+        top_categories = {}
+        amount_categories = {}
+        tendencias_categories = {}
+        promedio_dias = {}
+    finally:
+        anios = 2014 
+        oanios = [i for i in range(anioactual, anios, -1)]
+
+
+    context = {'anios': oanios, 'ianio': dFecha, 'anioactual': anioactual, 'anio_anterior': anio_anterior,
+               'top_categories': top_categories, 'amount_categories': amount_categories,
+               'tendencias_categories': tendencias_categories , 'promedio_dias': promedio_dias ,
+               'result': result, 'js_data_json': js_data_json , 'mensaje': mensaje}
+
+    return render (request, template_name, context)
 
 
 ##funciones locales

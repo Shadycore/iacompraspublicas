@@ -27,3 +27,4 @@ analisiscompraspublicas/__init__.py
 analisiscompraspublicas/migrations/__init__.py
 analisiscompraspublicas/migrations/0001_initial.py
 db.sqlite3-journal
+analisiscompraspublicas/modelos-español.py

@@ -53,24 +53,25 @@ imprimir { display: block;}
 {% block app_menu %}
 <ul class="app-menu list-unstyled accordion" id="menu-accordion">
     <li class="nav-item">
-        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
         <a class="nav-link" href="{% url 'analisiscompraspublicas:contratosView' %}">
                 <span class="nav-link-text">Contratos</span>
         </a><!--//nav-link-->
     </li><!--//nav-item-->
     <li class="nav-item">
-        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
         <a class="nav-link" href="{% url 'analisiscompraspublicas:compradoresView' %}">
-                <span class="nav-link-text">Entidades Compradoras</span>
+                <span class="nav-link-text">Licitaciones</span>
         </a><!--//nav-link-->
     </li><!--//nav-item-->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'analisiscompraspublicas:compradores2View' %}">
+              <span class="nav-link-text">Licitaciones por categorías</span>
+      </a><!--//nav-link-->
+  </li><!--//nav-item-->
 
     <li class="nav-item">
-        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
         <a class="nav-link" href= {% url 'cargainfo:cargainfo' %}>
                 <span class="nav-link-text">Carga información (SRI - OCDS)</span>
-        </a><!--//nav-link-->
-        
+        </a><!--//nav-link-->        
     </li><!--//nav-item-->
 </ul><!--//app-menu-->
 {% endblock app_menu %}
