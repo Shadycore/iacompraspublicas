@@ -4,6 +4,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.messages.views import SuccessMessageMixin
 from django.views import generic
+from django.db import connection
 from django.urls import reverse, reverse_lazy
 from django.db.models import Sum, F, DateTimeField, Count, FloatField, \
                             IntegerField, Prefetch, Case, When, Avg, Min, \
@@ -21,11 +22,14 @@ from django.contrib import messages
 from django.contrib.auth import authenticate
 import numpy as np
 import pandas as pd
-#from sklearn.preprocessing import LabelEncoder
-#from sklearn.model_selection import train_test_split
-#from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
 
-from analisiscompraspublicas.models import contract, tender, planning, award, release
+
+from analisiscompraspublicas.models import contract, tender, planning, award, release, supplier
 
 
 def contratosView(request):
@@ -44,8 +48,6 @@ def contratosView(request):
     contratos_estados = {}
     contratos_mayor_valor = {}
     try:          
-        ## Contratos
-        #info anio combo    
         contracts = contract.objects.filter(Q(amount__isnull=False) & Q(amount__gt=0) & Q(contractPeriod_startDate__startswith=dFecha))
         
         average_value = contracts.annotate(numeric_amount=Cast(NullIf('amount', 
@@ -72,15 +74,13 @@ def contratosView(request):
 
         average_value_anterior = int(average_value_anterior)
         std_deviation_anterior = std_deviation_anterior
-        ## Contratos por estados
+
         contracts_status = contract.objects.filter(Q(amount__isnull=False) & Q(amount__gt=0) & Q(contractPeriod_startDate__startswith=dFecha))
         if not contracts_status:
             contratos_estados = {'status': "", 'contador': 0}
         else:
-            #agrupa los contratos por estado y los cuenta
             contratos_estados = contracts_status.values('status').annotate(contador=Count('co_id')).order_by('-contador')
 
-        #selecciona los 5 contrato con mayor valor y el estado del mismo, se filtra por el año actual
         contratos_mayor_valor = contract.objects.filter(Q(amount__isnull=False) & Q(amount__gt=0) & Q(contractPeriod_startDate__startswith=dFecha) & Q(status="active")).order_by('-amount')[:5]
         if not contratos_mayor_valor:
             contratos_mayor_valor = {}
@@ -105,7 +105,6 @@ def contratosView(request):
 
     return render(request, template_name, context)
 
-
 def compradoresView(request):
     template_name = 'compradores.html'
     anioactual = datetime.now().year
@@ -127,16 +126,12 @@ def compradoresView(request):
 
 
     try:
-        #seleccionar los 5 compradores con mayor numero de contratos activos, sumar los montos y filtrar por año actual
         entidades_activas = tender.objects.filter(Q(value_amount__isnull=False) & Q(value_amount__gt=0) & Q(tenderPeriod_startDate__startswith=dFecha)).values('procuringEntity_name').annotate(contador=Count('te_id')).order_by('-contador')[:5]
         
-        # Obtener los métodos de adquisición más comunes y la cantidad de los mismos.
         metodos = tender.objects.filter(Q(procurementMethod__isnull=False) & Q(procurementMethod__gt=0) & Q(tenderPeriod_startDate__startswith=dFecha)).values('procurementMethod').annotate(contador=Count('te_id')).order_by('-contador')
 
-        # obtener las licitaciones por año y por mainProcurementCategory obtener la cantidad de las licitaciones
         tendencias = tender.objects.filter(Q(mainProcurementCategory__isnull=False) & Q(mainProcurementCategory__gt=0) & Q(tenderPeriod_startDate__startswith=dFecha)).values('mainProcurementCategory').annotate(contador=Count('te_id')).order_by('mainProcurementCategory')
 
-        # Calcular el promedio de días, awardPeriod_durationInDays, que duran las licitaciones en cada una de lascategorías mainProcurementCategory
         promedios = tender.objects.filter(Q(mainProcurementCategory__isnull=False) & Q(mainProcurementCategory__gt=0) & Q(tenderPeriod_startDate__startswith=dFecha)).values('mainProcurementCategory').annotate(promedio=Avg('awardPeriod_durationInDays')).order_by('mainProcurementCategory')
     except Exception as e: 
         entidades_activas = {}
@@ -173,17 +168,14 @@ def compradores2View (request):
     tendencias_categories = {}
     promedio_dias = {}
 
-    # Consulta para tomar los primeros 4 dígitos del campo y validar que sean numéricos
     queryset = tender.objects.annotate(
         start_date_year=Substr('tenderPeriod_startDate', 1, 4, output_field=CharField())
-    ).filter(start_date_year__regex=r'^\d{4}$')  # Esto verifica si son 4 dígitos numéricos
+    ).filter(start_date_year__regex=r'^\d{4}$')  
 
-    # Consulta para agrupar por los 4 dígitos del campo start_date_year y procurementMethod
-    # y contar el campo te_id
     result = queryset.values('start_date_year', 'procurementMethod').annotate(
         count_te_id=Count('te_id')
     ).order_by('start_date_year', 'procurementMethod')
-    # Ahora, agrupa los datos por año y método de adquisición
+
     aggregated_data = {}
     for entry in result:
         year = entry['start_date_year']
@@ -255,6 +247,90 @@ def compradores2View (request):
                'result': result, 'js_data_json': js_data_json , 'mensaje': mensaje}
 
     return render (request, template_name, context)
+
+def proveedoresView(request):
+    template_name = 'proveedores.html'
+    anioactual = datetime.now().year
+    dFecha = datetime.now().year
+
+    if request.method == 'POST':
+        dFecha = int(request.POST.get("id_anios"))
+    
+    mensaje = ""
+    anio_anterior = dFecha - 1
+    context = {}
+    try:
+        query = f"""
+            SELECT a.name AS nombre_proveedor,
+                b.status AS estado_contrato,
+                SUBSTRING(b.dateSigned, 1, 4) AS anio_contrato,
+                SUM(CAST(b.amount AS FLOAT)) AS total_contratos,
+                COUNT(b.ocid) AS cantidad_contratos
+            FROM supplier a
+            INNER JOIN contract b ON a.ocid = b.ocid
+            WHERE SUBSTRING(b.dateSigned, 1, 4) = '{dFecha}'
+            GROUP BY SUBSTRING(b.dateSigned, 1, 4), a.name, b.status
+            ORDER BY COUNT(b.ocid) DESC;
+        """
+
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            results = cursor.fetchall()    
+    
+    except Exception as e: 
+            results = {}
+            mensaje = e.__str__()
+    finally:
+        anios = 2014 
+        oanios = [i for i in range(anioactual, anios, -1)]
+        
+
+    context = {'anios': oanios, 'ianio': dFecha, 'anioactual': anioactual, 'anio_anterior': anio_anterior,
+               'results': results, 'mensaje': mensaje}
+    return render(request, template_name, context)
+
+def analisisvariosView(request):
+    template_name = 'varios.html'
+    anioactual = datetime.now().year
+    dFecha = datetime.now().year
+
+    if request.method == 'POST':
+        dFecha = int(request.POST.get("id_anios"))
+
+    mensaje = ""
+    anio_anterior = dFecha - 1
+    context = {}
+
+    return render(request, template_name, context)   
+
+def tendencia_contratos(request):
+    dFecha = datetime.now().year
+    query = f"""
+            select ocid, cast(amount as float) as amount, cast(substr(dateSigned,1,4) as datetime) as dateSigned
+            from contract;
+        """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        results = cursor.fetchall()   
+
+    df = pd.DataFrame(results)
+    df[2] = pd.to_datetime(df[2])
+    df[2] = df[2].dt.year
+    contract_amount_by_year = df.groupby([2])[1].sum()
+
+    plt.figure(figsize=(5, 5))
+    plt.plot(contract_amount_by_year.index, contract_amount_by_year.values, marker='o')
+    plt.title('Evolución de Montos de Contratos a lo Largo de los Años')
+    plt.xlabel('Año')
+    plt.ylabel('Monto Total de Contratos')
+    plt.grid(True)
+    # Convierte el gráfico en una imagen
+    canvas = FigureCanvas(plt.gcf())
+    response = HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+
+    return response
 
 
 ##funciones locales

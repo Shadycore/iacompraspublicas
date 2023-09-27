@@ -66,11 +66,22 @@ imprimir { display: block;}
       <a class="nav-link" href="{% url 'analisiscompraspublicas:compradores2View' %}">
               <span class="nav-link-text">Licitaciones por categorías</span>
       </a><!--//nav-link-->
-  </li><!--//nav-item-->
+    </li><!--//nav-item-->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'analisiscompraspublicas:proveedoresView' %}">
+              <span class="nav-link-text">Proveedores</span>
+      </a><!--//nav-link-->
+    </li><!--//nav-item-->
+    <li class="nav-item">
+      <a class="nav-link" href="{% url 'analisiscompraspublicas:analisisvariosView' %}">
+              <span class="nav-link-text">Varios</span>
+      </a><!--//nav-link-->
+    </li><!--//nav-item-->
+
 
     <li class="nav-item">
         <a class="nav-link" href= {% url 'cargainfo:cargainfo' %}>
-                <span class="nav-link-text">Carga información (SRI - OCDS)</span>
+                <span class="nav-link-text">Carga información (OCDS) :: en base desde el 21 al 23</span>
         </a><!--//nav-link-->        
     </li><!--//nav-item-->
 </ul><!--//app-menu-->

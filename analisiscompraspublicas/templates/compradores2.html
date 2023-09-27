@@ -125,9 +125,9 @@
           text: '#252930',
           border: '#e7e9ed'
         };
-    //console.log( {{ result }} )
-    //console.log( {{ top_categories }} )
-    //console.log( {{ promedio_dias }} )
+    //console.log(  )
+    //console.log(  )
+    //console.log(  )
 
         var bkprimario = "rgba(117,193,129,0.8)";
         var bksecundario = "rgba(91,153,234,0.8)";
@@ -201,7 +201,7 @@
           data: {
             labels: [{% for data in amount_categories %} '{{ data.procurementMethod }}',  {% endfor %} ],
             datasets: [{
-              label: 'Montos por categoría',
+              label: 'Montos por categoría,
               backgroundColor: bksecundario,
               borderColor: 'gray',
               data: [{% for data in amount_categories %} '{{ data.valor_contratos | floatformat:"0" }}',  {% endfor %}  ],

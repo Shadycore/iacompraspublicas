@@ -10,7 +10,8 @@ buscapatrones/__pycache__/*
 cargainfo/migrations/*
 cargainfo/__pycache__/*
 iacompraspublicas/__pycache__/*
-
+analisiscompraspublicas/__pycache__/*
+analisiscompraspublicas/migrations/*
 media/awards_2021.csv
 media/awards_2021.csv
 media/awards_2022.csv
