@@ -20,6 +20,7 @@ pandas = "*"
 scikit-learn = "*"
 scipy = "*"
 matplotlib = "*"
+statsmodels = "*"
 
 [dev-packages]
 pylint = "*"

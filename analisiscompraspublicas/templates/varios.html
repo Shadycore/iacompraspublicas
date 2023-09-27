@@ -34,7 +34,7 @@
                 </div><!--//app-card-header-->
                 <div class="app-card-body p-4">					   
                   <div class="chart-container">
-                          <img src="{% url 'analisiscompraspublicas:tendencia_contratos' %}" alt="Gráfico de Tendencia" width="400" height="400">
+                          <img src="{% url 'analisiscompraspublicas:tendencia_contratos' %}" alt="" width="500" height="500">
                   </div>
                 </div><!--//app-card-body-->
               </div><!--//app-card-->
@@ -46,7 +46,7 @@
                 </div><!--//app-card-header-->
                 <div class="app-card-body p-4">					   
                   <div class="chart-container">
-                          <canvas id="grcatmontos" ></canvas>
+                      <img src="{% url 'analisiscompraspublicas:tendencia_valor_contrato' %}" alt="" width="500" height="500">
                   </div>
                 </div><!--//app-card-body-->
               </div><!--//app-card-->
@@ -60,7 +60,8 @@
                 </div><!--//app-card-header-->
                 <div class="app-card-body p-4">					   
                   <div class="chart-container">
-                          <canvas id="grcatanios" ></canvas>
+                        
+                        <img src="{% url 'analisiscompraspublicas:grafico_arima' %}" alt="" width="500" height="500">
                   </div>
                 </div><!--//app-card-body-->
               </div><!--//app-card-->

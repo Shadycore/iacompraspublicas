@@ -8,7 +8,7 @@ from django.db import connection
 from django.urls import reverse, reverse_lazy
 from django.db.models import Sum, F, DateTimeField, Count, FloatField, \
                             IntegerField, Prefetch, Case, When, Avg, Min, \
-                            Max, Value, Avg, StdDev, CharField
+                            Max, Value, Avg, StdDev, CharField, Func
 from datetime import datetime, timezone, timedelta, date
 from django.db.models.functions import TruncMonth, TruncYear, ExtractMinute, \
                             ExtractMonth, ExtractYear, Cast, Coalesce, Extract, \
@@ -27,6 +27,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+import statsmodels.api as sm
+from statsmodels.tsa.arima_model import ARIMA
 
 
 from analisiscompraspublicas.models import contract, tender, planning, award, release, supplier
@@ -306,20 +308,22 @@ def analisisvariosView(request):
 def tendencia_contratos(request):
     dFecha = datetime.now().year
     query = f"""
-            select ocid, cast(amount as float) as amount, cast(substr(dateSigned,1,4) as datetime) as dateSigned
+            select ocid, cast(amount as float) as amount, substr(dateSigned,1,4) as dateSigned
             from contract;
         """
 
     with connection.cursor() as cursor:
         cursor.execute(query)
         results = cursor.fetchall()   
+    column_names = [desc[0] for desc in cursor.description]
+    contracts = [dict(zip(column_names, row)) for row in results]
 
-    df = pd.DataFrame(results)
-    df[2] = pd.to_datetime(df[2])
-    df[2] = df[2].dt.year
-    contract_amount_by_year = df.groupby([2])[1].sum()
+    df = pd.DataFrame(contracts)
+    df['dateSigned'] = pd.to_datetime(df['dateSigned'])
+    df['dateSigned'] = df['dateSigned'].dt.year
+    contract_amount_by_year = df.groupby(['dateSigned'])['amount'].sum()
 
-    plt.figure(figsize=(5, 5))
+    plt.figure(figsize=(12, 6))
     plt.plot(contract_amount_by_year.index, contract_amount_by_year.values, marker='o')
     plt.title('Evolución de Montos de Contratos a lo Largo de los Años')
     plt.xlabel('Año')
@@ -332,6 +336,111 @@ def tendencia_contratos(request):
 
     return response
 
+def grafico_arima(request):
+    query = f"""
+            select cast(tenderPeriod_startDate as datetime) as Year,
+                cast(value_amount as float) as value_amount
+            from tender
+        """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        tenders = cursor.fetchall()   
+
+    column_names = [desc[0] for desc in cursor.description]
+    tenders_data = [dict(zip(column_names, row)) for row in tenders]
+    
+    tender_df = pd.DataFrame(list(tenders_data))
+    tender_df['Year'] = pd.to_datetime(tender_df['Year'])  # Asegúrate de que 'dateSigned' sea un objeto DateTime
+
+    # Establece la fecha como índice
+    tender_df.set_index('Year', inplace=True)
+
+    # Reemplaza los valores faltantes (NaN) con ceros o el método de tu elección.
+    tender_df['value_amount'].fillna(0, inplace=True)
+
+    # Realiza un análisis visual de los datos
+    plt.figure(figsize=(15, 8))
+    plt.plot(tender_df.index, tender_df['value_amount'], label='Costo de licitaciones')
+    plt.title('Costo de licitaciones a lo largo del Tiempo')
+    plt.xlabel('Fecha')
+    plt.ylabel('Valor')
+    plt.legend()
+    plt.grid(True)
+    #plt.show()
+
+    # Ajusta un modelo ARIMA
+    order = (1, 0, 1)  # Define los valores p, d, q adecuados para tu modelo
+    model = ARIMA(tender_df['value_amount'], order=order)
+    results = model.fit()
+
+    # Realiza predicciones
+    forecast_steps = 12  # Número de pasos de predicción hacia el futuro
+    forecast, stderr, conf_int = results.forecast(steps=forecast_steps)
+
+    # Crea un gráfico de las predicciones
+    plt.figure(figsize=(15, 8))
+    plt.plot(tender_df.index, tender_df['value_amount'], label='Costo de licitaciones')
+    plt.plot(pd.date_range(start=tender_df.index[-1], periods=forecast_steps+1, closed='right'), forecast, label='Predicción', color='red')
+    plt.title('Predicción de Costo de licitaciones')
+    plt.xlabel('Fecha')
+    plt.ylabel('Valor')
+    plt.legend()
+    plt.grid(True)
+
+    #plt.show()
+    # Convierte el gráfico en una imagen
+    canvas = FigureCanvas(plt.gcf())
+    response = HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+    return response
+
+def tendencia_valor_contrato(request):
+    dFecha = datetime.now().year
+    query = f"""
+            select 
+            SUBSTR(contractPeriod_startDate,1,4) as year,
+            SUBSTR(contractPeriod_startDate,6,2) as month,
+            sum(amount) as total_contract_value
+            from contract
+            group by SUBSTR(contractPeriod_startDate,1,4),
+                    SUBSTR(contractPeriod_startDate,6,2)
+        """
+
+    with connection.cursor() as cursor:
+        cursor.execute(query)
+        contracts = cursor.fetchall()   
+
+    column_names = [desc[0] for desc in cursor.description]
+    data = [dict(zip(column_names, row)) for row in contracts]
+
+    # Crear un DataFrame de Pandas a partir de los datos
+    df = pd.DataFrame(data)
+
+    df['Fecha'] = pd.to_datetime(df[['year', 'month']].assign(day=1))
+
+    # Establecer la columna 'Fecha' como índice (necesario para el análisis de series temporales)
+    df.set_index('Fecha', inplace=True)
+
+    # Graficar las tendencias
+    plt.figure(figsize=(15, 8))
+    plt.plot(df.index, df['total_contract_value'], marker='o', linestyle='-')
+    plt.title('Tendencias en el Valor de Contratos a lo largo del Tiempo')
+    plt.xlabel('Fecha')
+    plt.ylabel('Valor del Contrato')
+    plt.grid(True)
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Guardar el gráfico en un archivo o mostrarlo
+    # plt.savefig('tendencias_contratos_publicos.png')
+    #plt.show()
+    # Convierte el gráfico en una imagen
+    canvas = FigureCanvas(plt.gcf())
+    response = HttpResponse(content_type='image/png')
+    canvas.print_png(response)
+
+    return response
 
 ##funciones locales
 def _std_deviation(values):
