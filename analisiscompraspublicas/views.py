@@ -261,6 +261,7 @@ def proveedoresView(request):
     mensaje = ""
     anio_anterior = dFecha - 1
     context = {}
+    results = {}
     try:
         query = f"""
             SELECT a.name AS nombre_proveedor,
@@ -272,7 +273,7 @@ def proveedoresView(request):
             INNER JOIN contract b ON a.ocid = b.ocid
             WHERE SUBSTRING(b.dateSigned, 1, 4) = '{dFecha}'
             GROUP BY SUBSTRING(b.dateSigned, 1, 4), a.name, b.status
-            ORDER BY COUNT(b.ocid) DESC;
+            ORDER BY b.status asc;
         """
 
         with connection.cursor() as cursor:
@@ -285,7 +286,6 @@ def proveedoresView(request):
     finally:
         anios = 2014 
         oanios = [i for i in range(anioactual, anios, -1)]
-        
 
     context = {'anios': oanios, 'ianio': dFecha, 'anioactual': anioactual, 'anio_anterior': anio_anterior,
                'results': results, 'mensaje': mensaje}
